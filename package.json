@@ -1,0 +1,27 @@
+{
+  "name": "character-sonnet-api",
+  "version": "1.0.0",
+  "description": "Backend for our character creator.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Roll-Noon-A-Barbaric-Sonnet/character-sonnet-api.git"
+  },
+  "author": "Ben Arno, Steven Boston, Benjamin Ibarra, Joel Connell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Roll-Noon-A-Barbaric-Sonnet/character-sonnet-api/issues"
+  },
+  "homepage": "https://github.com/Roll-Noon-A-Barbaric-Sonnet/character-sonnet-api#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.13.0"
+  }
+}
