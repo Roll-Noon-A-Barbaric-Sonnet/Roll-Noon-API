@@ -27,6 +27,8 @@ db.once('open', function() {
   console.log('Mongo Online')
 });
 
+app.get('/formOne', routeHandlers.formOne)
+
 app.get('*', routeHandlers.test)
 
 app.listen(PORT, () => {console.log(`listening on port ${PORT}`);});
