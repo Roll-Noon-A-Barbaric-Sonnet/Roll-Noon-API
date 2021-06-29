@@ -16,6 +16,25 @@ let formOne = async (req,res) => {
   let raceData = await axios.get(`https://www.dnd5eapi.co/api/races/${race}`);
   let classData = await axios.get(`https://www.dnd5eapi.co/api/classes/${charClass}`);
 
+  res.send([raceData.data,classData.data]);
+  // //mail 0 will be race data, mail 1 will be class data, mail 2 will be options 
+  // let mail = [];
+  // mail[0] = {
+  // 'speed': raceData.data.speed,
+  // 'size': raceData.data.size,
+  // 'abililties': {
+  //   'index': raceData.data.
+  // }
+  // }
+  // mail[1] = {
+
+  // }
+  // mail[2] = {
+
+  // }
+
+
+  console.log('you\'ve got mail!', mail);
 }
 
 // let getAll = (req,res) => {
@@ -23,4 +42,4 @@ let formOne = async (req,res) => {
 // }
 
 
-module.exports = {test}
+module.exports = {test, formOne}
