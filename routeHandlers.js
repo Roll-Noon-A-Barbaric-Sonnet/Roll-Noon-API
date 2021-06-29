@@ -7,6 +7,7 @@ let test = (req,res) => {
   res.send('lets make a character')
 }
 
+//THISSERVER/formone?race=RACE&charClass=CLASS
 let formOne = async (req,res) => {
   console.log('form1 calling');
   const race = req.query.race;
