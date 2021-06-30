@@ -14,9 +14,39 @@ let formOne = async (req,res) => {
   const charClass = req.query.charClass;
   const level = 1;
 
+  // get primary data for race and class
   let raceData = await axios.get(`https://www.dnd5eapi.co/api/races/${race}`);
   let classData = await axios.get(`https://www.dnd5eapi.co/api/classes/${charClass}`);
+  
 
+  //get nested weapon arrays
+  let martialWeapons = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/martial-weapons`);
+  let simpleWeapons = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/simple-weapons`);
+  
+  const optionArrays = {
+    'martial-weapons': martialWeapons.data.equipment,
+    'simple-weapons': simpleWeapons.data.equipment
+  };
+
+  // get class-specific nested equipment arrays
+  if (charClass == 'sorcerer' || charClass == 'warlock' || charClass == 'wizard') {
+    let arcaneFoci = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/arcane-foci`);
+    optionArrays['arcane-foci'] = arcaneFoci.data.equipment;
+  }
+  if (charClass == 'bard') {
+    let instruments = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/musical-instruments`);
+    optionArrays['musical-instruments'] = instruments.data.equipment;
+  }
+  if (charClass == 'cleric' || charClass == 'paladin') {
+    let holySymbols = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/holy-symbols`);
+    optionArrays['holy-symbols'] = holySymbols.data.equipment;
+  }
+  if (charClass == 'druid') {
+    let druidFoci = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/druidic-foci`);
+    optionArrays['druidic-foci'] = druidFoci.data.equipment;
+  }
+
+  
   const charClassData = classData.data
 
   //mail 0 will be race data, mail 1 will be class data, mail 2 will be options 
@@ -73,7 +103,20 @@ let formOne = async (req,res) => {
   }));
   
   //Classdata Options
-  charClassData.starting_equipment_options.forEach(option => mail[2].push(option));
+
+  //get ready for the storm of work to make equipment happen
+  charClassData.starting_equipment_options.forEach(choice => {
+    //Are all the options a single item? great!
+    if (choice.from.every(item=>item.equipment)) {
+      mail[3].push(choice)
+    //Are there some options that are multiple items? hmm...
+    } else {
+      choice.forEach(option=>{
+        if (option[0] && option.every()
+      })
+    }
+
+  }
   charClassData.proficiency_choices.forEach(option => mail[2].push(option));
   charClassData.spellcasting? mail[1].spellcasting = charClassData.spellcasting: '';
 
