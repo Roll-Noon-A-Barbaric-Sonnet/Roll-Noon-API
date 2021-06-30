@@ -37,6 +37,11 @@ let formOne = async (req,res) => {
     let arcaneFoci = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/arcane-foci`);
     optionArrays['arcane-foci'] = arcaneFoci.data.equipment.map(item=>formatEquip(item));
   }
+  if (charClass == 'barbarian' || charClass == 'ranger') {
+    let martialMelee = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/martial-melee-weapons`);
+    optionArrays['martial-melee-weapons'] = martialMelee.data.equipment.map(item=>formatEquip(item));
+  }
+
   if (charClass == 'bard') {
     let instruments = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/musical-instruments`);
     optionArrays['musical-instruments'] = instruments.data.equipment.map(item=>formatEquip(item));
@@ -145,6 +150,8 @@ let formOne = async (req,res) => {
             //is the option just a nested option? if so, get the list and ship it. 
             if (option['equipment_option']) {
               newFrom = [...newFrom,...optionArrays[option.equipment_option.from.equipment_category.index]];
+            } else if (option['equipment_category']) {
+              newFrom = [...newFrom,...optionArrays[option.equipment_category.index]];
             } else { 
               //only the truly awful options make it this far. 'just' a nested option indeed. 
               // get the list from the nested options so we can synthesize all the variations in to multis
@@ -193,7 +200,6 @@ let formOne = async (req,res) => {
       return Promise.all(lvl.feature_choices.map(async each => {
         let choiceData = await axios.get(`https://www.dnd5eapi.co${each.url}`)
         mail[2].push(choiceData.data.choice)
-        console.log(choiceData.data.choice)
       }))
     }
   })).then(data => res.send(mail));
