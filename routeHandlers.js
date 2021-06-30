@@ -122,7 +122,7 @@ let formOne = async (req,res) => {
           //once again, regular items get a free pass. 
           if (option['equipment']) {
             newFrom.push(option);
-            //if the option is a list, just stick the list together ans ship it. 
+            //if the option is a list, just stick the list together and ship it. 
           } else if (option[0] && Object.keys(option).every(key=>option[key]['equipment'])) {
             let multiName = [];
             let multiItems = [];
@@ -145,11 +145,11 @@ let formOne = async (req,res) => {
             //is the option just a nested option? if so, get the list and ship it. 
             if (option['equipment_option']) {
               newFrom = [...newFrom,...optionArrays[option.equipment_option.from.equipment_category.index]];
-            } else { //only the truly awful options make it this far. 'just' a nested option indeed. 
-              
+            } else { 
+              //only the truly awful options make it this far. 'just' a nested option indeed. 
               // get the list from the nested options so we can synthesize all the variations in to multis
               optionArrays[option[1].equipment_option.from.equipment_category.index].map(item=>{
-
+                //luckily the item/options hybrids have consistent ordering
                 let multiName = [item.equipment.name,option[0].equipment.name];
                 let multiItems = [item, option[0]];
                 
@@ -163,22 +163,6 @@ let formOne = async (req,res) => {
                   quantity: 1
                 })
               })
-
-
-              // optionKeys.forEach(key=>{
-              //   if (option[key].equipment_option) {
-              //     optionArrays[option[key].equipment_option.from.equipment_category.index].forEach(item=>{
-              //       // if (newFrom.every(obj=>(obj.equipment.index!=item.index))) {
-              //         newFrom.push(item);
-              //       // };
-              //     });
-              //   } else {
-              //     if (newFrom.every(obj=>obj.index!=option.key.index)) {
-              //       newFrom.push(option.key);
-              //     };
-              //     }
-              //   }
-              // );
             };
           };
         });
