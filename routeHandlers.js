@@ -146,21 +146,39 @@ let formOne = async (req,res) => {
             if (option['equipment_option']) {
               newFrom = [...newFrom,...optionArrays[option.equipment_option.from.equipment_category.index]];
             } else { //only the truly awful options make it this far. 'just' a nested option indeed. 
-              let optionKeys = Object.keys(option);
-              optionKeys.forEach(key=>{
-                if (option[key].equipment_option) {
-                  optionArrays[option[key].equipment_option.from.equipment_category.index].forEach(item=>{
-                    // if (newFrom.every(obj=>(obj.index!=item.index))) {
-                      newFrom.push(item);
-                    // };
-                  });
-                } else {
-                  if (newFrom.every(obj=>obj.index!=option.key.index)) {
-                    newFrom.push(option.key);
-                  };
-                  }
-                }
-              );
+              
+              // get the list from the nested options so we can synthesize all the variations in to multis
+              optionArrays[option[1].equipment_option.from.equipment_category.index].map(item=>{
+
+                let multiName = [item.equipment.name,option[0].equipment.name];
+                let multiItems = [item, option[0]];
+                
+                newFrom.push({
+                  equipment:  {
+                    name: multiName.join(', '),
+                    multi: true,
+                    items: multiItems,
+                    index: 'multi'
+                  },
+                  quantity: 1
+                })
+              })
+
+
+              // optionKeys.forEach(key=>{
+              //   if (option[key].equipment_option) {
+              //     optionArrays[option[key].equipment_option.from.equipment_category.index].forEach(item=>{
+              //       // if (newFrom.every(obj=>(obj.equipment.index!=item.index))) {
+              //         newFrom.push(item);
+              //       // };
+              //     });
+              //   } else {
+              //     if (newFrom.every(obj=>obj.index!=option.key.index)) {
+              //       newFrom.push(option.key);
+              //     };
+              //     }
+              //   }
+              // );
             };
           };
         });
