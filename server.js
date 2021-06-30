@@ -12,7 +12,8 @@ app.use(express.json());
 
 const PORT = process.env.PORT
 
-const routeHandlers = require('./routeHandlers');
+const formOne = require('./formOne.js');
+const routeHandlers = require('./routeHandlers.js');
 
 // const client = jwksClient({
 //   jwksUri: 'https://devthingy.us.auth0.com/.well-known/jwks.json'
@@ -27,7 +28,7 @@ db.once('open', function() {
   console.log('Mongo Online')
 });
 
-app.get('/formOne', routeHandlers.formOne)
+app.get('/formOne', formOne)
 
 app.get('*', routeHandlers.test)
 
