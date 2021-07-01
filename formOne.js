@@ -78,7 +78,7 @@ const formOne = async (req,res) => {
     raceData.data.languages=[...raceData.data.languages,...subRaceData.data.languages]; 
     //add the additional traits and proficiencies
     mail[0].traits = [...mail[0].traits,subRaceData.data.racial_traits];
-    mail[0].proficiencies = [...mail[0].proficiencies,subRaceData.data.starting_proficiencies];
+    mail[0].proficiencies = [...mail[0].proficiencies,...subRaceData.data.starting_proficiencies];
     //and find all those extra options
     subRaceData.data.language_options?mail[2].push(subRaceData.data.language_options):'';
     subRaceData.data.racial_trait_options?mail[2].push(subRaceData.data.racial_trait_options):'';
@@ -101,10 +101,7 @@ const formOne = async (req,res) => {
   //Classdata Maps
   mail[1].proficiencies = charClassData.proficiencies.map(prof => prof.index);
   mail[1].savingThrows = charClassData.saving_throws.map(save => save.name);
-  mail[1].startingEquipment = charClassData.starting_equipment.map(item => ({
-    'name':item.equipment.name,
-    'quantity': item.quantity
-  }));
+  mail[1].startingEquipment = charClassData.starting_equipment;
   
   //Classdata Options
 

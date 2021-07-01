@@ -18,8 +18,6 @@ const axios = require('axios');
 //   });
 // };
 
-
-
 //test route. Hi! 
 let test = (req,res) => {
   console.log('test hit');
@@ -46,7 +44,7 @@ let test = (req,res) => {
 //     if(err) {
 //       res.status(500).send('Invalid token');
 //     } else {
-//          //we will probably need to do some formatting and 800 get requests here. maybe have that function in a  module. 
+//          //we will probably need to do some formatting and 800 get requests here. maybe have that function in a  module. EDIT: see the CPU
 //       const newChar = new Character ({
 //         data: 'schema details go here',
 //         email: user.email
