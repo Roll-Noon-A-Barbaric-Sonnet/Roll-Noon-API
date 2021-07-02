@@ -10,7 +10,7 @@ const axios = require('axios');
 //   jwksUri: 'our URI here'
 // });
 
-// //From jwt docs
+//From jwt docs
 // function getKey(header, callback){
 //   client.getSigningKey(header.kid, function(err, key) {
 //     var signingKey = key.publicKey || key.rsaPublicKey;
@@ -38,7 +38,11 @@ let testCpu = (req,res) => {
 //       res.status(500).send('Invalid token');
 //     } else {
 //       let userEmail = user.email;
-      
+//       Character.find({email: userEmail}, (err, characters) => {
+//         const parsedCharacters = JSON.parse(characters);
+//         console.log(parsedCharacters);
+//         res.send(parsedCharacters);
+//       });
 //     };
 //   });
 // }
@@ -51,7 +55,7 @@ let testCpu = (req,res) => {
 //     } else {
 //          //we will probably need to do some formatting and 800 get requests here. maybe have that function in a  module. EDIT: see the CPU
 //       const newChar = new Character ({
-//         data: 'schema details go here',
+//         character: JSON.stringify(req.body.character),
 //         email: user.email
 //       });
 //       newChar.save((err, newCharData)=> {
@@ -69,7 +73,7 @@ let testCpu = (req,res) => {
 //     } else { 
 //       let charId = req.params.id;
 
-//       .deleteOne({_id: charId, email: user.email})
+//       Character.deleteOne({_id: charId, email: user.email})
 //         .then(deletedCharData => {
 //           console.log(deletedBookData);
 //           res.send('this time the cat was a character, but was nonetheless deleted');
@@ -78,4 +82,9 @@ let testCpu = (req,res) => {
 //   });
 // }
 
+
+// Copy paste this entire line in after test for things to work good.
+// , findCharByEmail, addChar, deleteChar
+
 module.exports = {test, testCpu}
+

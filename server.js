@@ -23,13 +23,20 @@ db.once('open', function() {
   console.log('Mongo Online')
 });
 
-
 //--------------------------Routes---------------------------------
 app.get('/', routeHandlers.test);
 
 app.post('/cpu',routeHandlers.testCpu);
 
 app.get('/formOne', formOne);
+
+// app.get('/characters', routeHandlers.findCharByEmail)
+
+// app.post('/characters', routeHandlers.addChar)
+
+// app.delete('/characters', routeHandlers.deleteChar)
+
+app.get('/', routeHandlers.test)
 
 app.get('*', (req,res)=>{
   res.status(404).send('You\'ve strayed from the path.');
