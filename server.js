@@ -26,19 +26,18 @@ db.once('open', function() {
 //--------------------------Routes---------------------------------
 app.get('/', routeHandlers.test);
 
-app.post('/cpu',routeHandlers.testCpu);
+app.post('/add',routeHandlers.addChar);
 
 app.get('/formOne', formOne);
 
-// app.get('/characters', routeHandlers.findCharByEmail)
+app.get('/characters', routeHandlers.findCharByEmail)
 
-// app.post('/characters', routeHandlers.addChar)
-
-// app.delete('/characters', routeHandlers.deleteChar)
+app.delete('/characters/:id', routeHandlers.deleteChar)
 
 app.get('/', routeHandlers.test)
 
 app.get('*', (req,res)=>{
+  console.log('whoops, 404')
   res.status(404).send('You\'ve strayed from the path.');
 })
 
