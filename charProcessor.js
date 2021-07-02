@@ -74,12 +74,10 @@ const charProcessor = async (charData) => {
     'cha': statToMod(statsObj.cha)
   }
   classObj.savingThrows.forEach(save=>{
-    console.log('save:',save, savesObj[save]);
     savesObj[save] = savesObj[save] + profBonus;
   });
   //lets put those attribute objects in here for safekeeping. 
   let statBlock = [statsObj,modsObj,savesObj];
-  console.log('full block:',statBlock)
   //next we need to get some of that basic data from race/class so that there are places to sort to: 
   let traitArray = raceObj.traits;
   let languageArray = raceObj.languages;
@@ -126,54 +124,13 @@ const charProcessor = async (charData) => {
       languageArray.push(ans.name);
     } else if (/traits/.test(ans.url)) {
       traitArray.push(ans);
-    } else if (/custom/.test(ans.url)){
+    } else if (/custom/.test(ans.url)||/proficiencies/.test(ans.url)){
       toolWeapArr.push(ans.name);
     } else {
       console.log('answer sorting, anomalous answer:', ans);
     }
   });
 
-  //axios everything
-    const get5ethings = async url => await axios.get(`https://www.dnd5eapi.co${url}`);
-    //especially the equipment. that needs stats. 
-    //this is the tricky part. What is an equipment? A miserable pile of secrets. 
-      //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
-    inventoryArray.forEach( async item=>{
-      let response = await get5ethings(item.equipment.url)
-      let itemInfo = response.data;
-      //from here, we have a big object, the only certainty of which is equipment_category. 
-        //indexes we are looking for include 'armor' and 'weapon' 
-        if (itemInfo.equipment_category.index==='armor') {
-          item = {
-            'name':`Armor: ${itemInfo.name}`, 
-            'type':'armor',
-            'armor_class': itemInfo.armor_class
-            }
-        } else if (itemInfo.equipment_category.index==='weapon') {
-          item = {
-            'name': itemInfo.name,
-            'type': 'weapon',
-            'damage': itemInfo.damage,
-            'range': itemInfo.range,
-            'properties': itemInfo.properties
-          }
-        } else {
-          let quant = item.quantity;
-          item = {
-            'name':item.equipment.name,
-            'type':'other',
-            'quantity': quant
-          };
-        };
-    });
-    //features need descriptions. 
-    featureArray.forEach(feature=>{
-      let featureInfo = get5ethings(feature.url);
-      feature = {
-        'name': featureInfo.name,
-        'description':featureInfo.desc
-      };
-    });
   //formatting
     //Skills need to have their names fixed! They can be: 'Skill: Perception' or just 'Perception'. The indexes have a parallel problem. 
     skillArray.forEach(prof=>{
@@ -186,16 +143,81 @@ const charProcessor = async (charData) => {
       }
     });
 
+  //axios everything
+    const get5ethings = async url => await axios.get(`https://www.dnd5eapi.co${url}`);
+    //especially the equipment. that needs stats. 
+    //this is the tricky part. What is an equipment? A miserable pile of secrets. 
+      //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
+    let finalInventory = [];
+    let shield = false;
+    if (inventoryArray.find(item=>item.equipment.index==='shield')) {
+      shield = true;
+    }
+    Promise.all(inventoryArray.map( async item=>{
+      let response = await get5ethings(item.equipment.url)
+      let itemInfo = response.data;
+      //from here, we have a big object, the only certainty of which is equipment_category. 
+        //indexes we are looking for include 'armor' and 'weapon' 
+        if (itemInfo.equipment_category.index==='armor') {
+           item = {
+            'name':`Armor: ${itemInfo.name}`, 
+            'type':'armor',
+            'armor_class': itemInfo.armor_class
+            }
+            finalInventory.push(item)
+            return item;
+        } else if (itemInfo.equipment_category.index==='weapon') {
+          item = {
+            'name': itemInfo.name,
+            'type': 'weapon',
+            'damage': itemInfo.damage,
+            'range': itemInfo.range,
+            'properties': itemInfo.properties
+          }
+          finalInventory.push(item)
+          return item;
+        } else {
+          let quant = item.quantity;
+          item = {
+            'name':item.equipment.name,
+            'type':'other',
+            'quantity': quant
+          };
+          finalInventory.push(item)
+          return item;
+        };
+    })).then(data=>{
+    //features need descriptions. 
+    Promise.all(featureArray.map(feature=>{
+      let featureInfo = get5ethings(feature.url);
+      feature = {
+        'name': featureInfo.name,
+        'description':featureInfo.desc
+      };
+      return feature;
+    }))
+  
+  }).then(data=> {
+
+    let armorClass = 10; 
     //calculations (HP and Armor Class)
-
-
-
+    let hitPoints = classObj.hitDie + modsObj.con;
+    let armor = finalInventory.find(item=>(item.type==='armor'&&item.armor_class.base>9))
+    console.log('armor:',armor);
+    if (armor) {
+    let armorStats = armor.armor_class;
+    armorClass = armorStats.base + (armorStats.dex_bonus==true?armorStats.max_bonus>modsObj.dex?armorStats.max_bonus:modsObj.dex:0)+(shield?2:0);
+    } else {
+      armorClass = 10 + modsObj.dex;
+    }
   let character = {
     'name': charInfo[0],
     'race': charInfo[1],
     'class': charInfo[2],
     'level': 1,
     'description': charInfo[3],
+    'hitPoints': hitPoints,
+    'armorClass': armorClass,
     'statBlock': statBlock,
     'profBonus': profBonus,
     'size': raceObj.size,
@@ -203,7 +225,7 @@ const charProcessor = async (charData) => {
     'traits':traitArray,
     'skills':skillArray,
     'languages':languageArray,
-    'equipment':inventoryArray,
+    'equipment':finalInventory,
     'proficiencies':toolWeapArr,
     'features':featureArray,
     'classSpecific': classObj.classSpecific
@@ -213,6 +235,7 @@ const charProcessor = async (charData) => {
 
   console.log('character finished!',character);
   return character
+});
 }
 
 module.exports = charProcessor;

@@ -77,7 +77,7 @@ const formOne = async (req,res) => {
     raceData.data.ability_bonuses=[...raceData.data.ability_bonuses,...subRaceData.data.ability_bonuses];
     raceData.data.languages=[...raceData.data.languages,...subRaceData.data.languages]; 
     //add the additional traits and proficiencies
-    mail[0].traits = [...mail[0].traits,subRaceData.data.racial_traits];
+    mail[0].traits = [...mail[0].traits,...subRaceData.data.racial_traits];
     mail[0].proficiencies = [...mail[0].proficiencies,...subRaceData.data.starting_proficiencies];
     //and find all those extra options
     subRaceData.data.language_options?mail[2].push(subRaceData.data.language_options):'';
