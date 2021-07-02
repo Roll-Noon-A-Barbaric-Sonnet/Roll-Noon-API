@@ -124,5 +124,5 @@ let deleteChar = (req,res) => {
   });
 }
 
-module.exports = {test, testCpu, addChar, findCharByEmail,deleteChar}
+module.exports = {test, testCpu, addChar, findCharByEmail, findCharId, deleteChar}
 

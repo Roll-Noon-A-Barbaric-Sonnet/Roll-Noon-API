@@ -32,7 +32,7 @@ app.get('/formOne', formOne);
 
 app.get('/characters', routeHandlers.findCharByEmail)
 
-app.get('/characters/:id', routeHandlers.deleteChar)
+app.get('/characters/:id', routeHandlers.findCharId)
 
 app.delete('/characters/:id', routeHandlers.deleteChar)
 
