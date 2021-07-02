@@ -87,7 +87,7 @@ const formOne = async (req,res) => {
   
   //raceData Maps
   mail[0].languages = raceData.data.languages.map(language=>language.index);
-  mail[0].abililties = raceData.data.ability_bonuses.map(ability_bonus=>({
+  mail[0].abilities = raceData.data.ability_bonuses.map(ability_bonus=>({
     'index': ability_bonus.ability_score.index,
     'bonus': ability_bonus.bonus
   }));
@@ -100,7 +100,7 @@ const formOne = async (req,res) => {
   
   //Classdata Maps
   mail[1].proficiencies = charClassData.proficiencies.map(prof => prof.index);
-  mail[1].savingThrows = charClassData.saving_throws.map(save => save.name);
+  mail[1].savingThrows = charClassData.saving_throws.map(save => save.name.toLowerCase());
   mail[1].startingEquipment = charClassData.starting_equipment;
   
   //Classdata Options
@@ -196,7 +196,7 @@ const formOne = async (req,res) => {
     }
   })).then(data => res.send(mail));
   
-  console.log('you\'ve got mail!', mail);
+  console.log('you\'ve got mail!');
 };
 
 module.exports = formOne;

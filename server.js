@@ -25,9 +25,11 @@ db.once('open', function() {
 
 
 //--------------------------Routes---------------------------------
-app.get('/', routeHandlers.test)
+app.get('/', routeHandlers.test);
 
-app.get('/formOne', formOne)
+app.post('/cpu',routeHandlers.testCpu);
+
+app.get('/formOne', formOne);
 
 app.get('*', (req,res)=>{
   res.status(404).send('You\'ve strayed from the path.');

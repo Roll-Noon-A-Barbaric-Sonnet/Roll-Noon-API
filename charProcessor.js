@@ -41,7 +41,6 @@ const charProcessor = async (charData) => {
   //lets let the pieces out of that ghastly array. 
   let raceObj = charData[0];
   let classObj = charData[1];
-  let charChoices = charData[2];
   let charAnswers = charData[3];
   let charInfo = charData[4];
   let statsObj = charData[5];
@@ -64,24 +63,32 @@ const charProcessor = async (charData) => {
     'wis': statToMod(statsObj.wis),
     'cha': statToMod(statsObj.cha)
   }
-  console.log(modsObj);
+
   //Might as well do saving throws now:
-  let savesObj = modsObj;
+  let savesObj = {
+    'str': statToMod(statsObj.str),
+    'dex': statToMod(statsObj.dex),
+    'con': statToMod(statsObj.con),
+    'int': statToMod(statsObj.int),
+    'wis': statToMod(statsObj.wis),
+    'cha': statToMod(statsObj.cha)
+  }
   classObj.savingThrows.forEach(save=>{
-    savesObj[save.toLowerCase()] += profBonus;
+    console.log('save:',save, savesObj[save]);
+    savesObj[save] = savesObj[save] + profBonus;
   });
   //lets put those attribute objects in here for safekeeping. 
-  statBlock = [statsObj,modsObj,savesObj];
-  console.log(statBlock)
+  let statBlock = [statsObj,modsObj,savesObj];
+  console.log('full block:',statBlock)
   //next we need to get some of that basic data from race/class so that there are places to sort to: 
-  traitArrat = raceObj.traits;
-  langArray = raceObj.languages;
+  let traitArray = raceObj.traits;
+  let languageArray = raceObj.languages;
 
   //Once we have gathered all of the skills, we will get a uniform format.
-  skillArray = raceObj.proficiencies.filter(prof=>/skill-/.test(prof.index));
+  let skillArray = raceObj.proficiencies.filter(prof=>/skill-/.test(prof.index));
   
   //this array will have all proficiencies other than skills, as simple strings.
-  toolWeapArr = [
+  let toolWeapArr = [
     //racial proficiencies are inconsistent, and need to be adjusted to fit nicely into the list. 
     ...raceObj.proficiencies.filter(prof=>!/skill-/.test(prof.index)).map(prof=>{
       return prof.index ? prof.name : prof;
@@ -90,9 +97,9 @@ const charProcessor = async (charData) => {
     ...classObj.proficiencies
   ];
   //equipment gathering
-  inventoryArray = classObj.startingEquipment;
+  let inventoryArray = classObj.startingEquipment;
   //class features
-  featureArray = classObj.features;
+  let featureArray = classObj.features;
   //Now that that is all set up, we can start sifting the rest of the answers:
     //a lot of this algorithm will be checking urls with regex.
       // ability bonuses are lingering in the choice array, but have already been handled above. (DONE)
@@ -116,7 +123,9 @@ const charProcessor = async (charData) => {
     } else if (/feature/.test(ans.url)) {
       featureArray.push(ans);
     } else if (/languages/.test(ans.url)) {
-      languages.push(ans.name);
+      languageArray.push(ans.name);
+    } else if (/traits/.test(ans.url)) {
+      traitArray.push(ans);
     } else if (/custom/.test(ans.url)){
       toolWeapArr.push(ans.name);
     } else {
@@ -129,8 +138,9 @@ const charProcessor = async (charData) => {
     //especially the equipment. that needs stats. 
     //this is the tricky part. What is an equipment? A miserable pile of secrets. 
       //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
-    inventoryArray.forEach(item=>{
-      let itemInfo = get5ethings(item.equipment.url);
+    inventoryArray.forEach( async item=>{
+      let response = await get5ethings(item.equipment.url)
+      let itemInfo = response.data;
       //from here, we have a big object, the only certainty of which is equipment_category. 
         //indexes we are looking for include 'armor' and 'weapon' 
         if (itemInfo.equipment_category.index==='armor') {
@@ -148,7 +158,7 @@ const charProcessor = async (charData) => {
             'properties': itemInfo.properties
           }
         } else {
-          quant = item.quantity;
+          let quant = item.quantity;
           item = {
             'name':item.equipment.name,
             'type':'other',
@@ -176,7 +186,11 @@ const charProcessor = async (charData) => {
       }
     });
 
-  character = {
+    //calculations (HP and Armor Class)
+
+
+
+  let character = {
     'name': charInfo[0],
     'race': charInfo[1],
     'class': charInfo[2],
@@ -186,12 +200,18 @@ const charProcessor = async (charData) => {
     'profBonus': profBonus,
     'size': raceObj.size,
     'speed': raceObj.speed,
-    'class-specific':classObj.class-specific
+    'traits':traitArray,
+    'skills':skillArray,
+    'languages':languageArray,
+    'equipment':inventoryArray,
+    'proficiencies':toolWeapArr,
+    'features':featureArray,
+    'classSpecific': classObj.classSpecific
   }
 
   classObj.spellcasting?character.spellcasting = classObj.spellcasting : '';
 
-  console.log(character);
+  console.log('character finished!',character);
   return character
 }
 

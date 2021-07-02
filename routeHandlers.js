@@ -1,5 +1,5 @@
 'use strict'
-
+const charProcessor = require('./charProcessor');
 const Character = require('./CharacterModel');
 const axios = require('axios');
 
@@ -24,6 +24,11 @@ let test = (req,res) => {
   res.send('Welcome to the Character Sonnet Server. Head to https://charactersonnet.quest/ to make a character.')
 }
 
+let testCpu = (req,res) => {
+  let charData= req.body;
+  console.log('new character!',charData);
+  res.send(charProcessor(charData));
+}
 //------------------------CRUD-------------------------- 
 
 // let findCharByEmail = (req,res) => {
@@ -73,4 +78,4 @@ let test = (req,res) => {
 //   });
 // }
 
-module.exports = {test}
+module.exports = {test, testCpu}
