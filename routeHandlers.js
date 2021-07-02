@@ -58,6 +58,31 @@ let findCharByEmail = (req,res) => {
   });
 }
 
+let findCharId = (req,res) => {
+  const token = req.headers.authorization.split(' ')[1];
+  jwt.verify(token, getKey, {}, function(err, user) {
+    if(err) {
+      res.status(500).send('Invalid token');
+    } else {
+      Character.findById(req.params.id, (err, characters) => {
+        console.log('charArray',characters);
+        let parsedCharacters = characters.map((char,ind)=>{
+          let tempObj = JSON.parse(char.character);
+          console.log('parsed:',tempObj)
+          return {
+            '_id': char._id,
+            'character': tempObj,
+            'email':char.email,
+            '__v': char.__v
+          }
+        })
+        console.log('sending:',parsedCharacters);
+        res.send(parsedCharacters);
+      });
+    };
+  });
+}
+
 let addChar = async (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
   jwt.verify(token, getKey, {}, async function(err, user) {
