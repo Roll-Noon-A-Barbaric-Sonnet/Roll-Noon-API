@@ -2,6 +2,7 @@
 
 const Character = require('./CharacterModel');
 const axios = require('axios');
+const itemFormatter = require('./itemFormatter');
 
 //Welcome to the CPU! (Character Processing Unit)
 
@@ -38,6 +39,7 @@ const statList = ['str','dex','con','int','wis','cha'];
 const statToMod = (stat) => Math.floor((stat-10)/2);
 
 const charProcessor = async (charData) => {
+  let character = {};
   //lets let the pieces out of that ghastly array. 
   let raceObj = charData[0];
   let classObj = charData[1];
@@ -133,84 +135,58 @@ const charProcessor = async (charData) => {
 
   //formatting
     //Skills need to have their names fixed! They can be: 'Skill: Perception' or just 'Perception'. The indexes have a parallel problem. 
-    skillArray.forEach(prof=>{
+    skillArray.forEach((prof,ind) =>{
       if (/Skill: /.test(prof.name)) {
-        prof = {
+        skillArray[ind] = {
         'name':prof.name.slice(7),
         'index':prof.index.slice(6)
         }
       } else {
+        skillArray[ind] = {
+          'name':prof.name,
+          'index':prof.index
+        }
       }
     });
-
-  //axios everything
+    //axios everything
     const get5ethings = async url => await axios.get(`https://www.dnd5eapi.co${url}`);
     //especially the equipment. that needs stats. 
     //this is the tricky part. What is an equipment? A miserable pile of secrets. 
       //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
-    let finalInventory = [];
     let shield = false;
     if (inventoryArray.find(item=>item.equipment.index==='shield')) {
       shield = true;
     }
-    Promise.all(inventoryArray.map( async item=>{
-      let response = await get5ethings(item.equipment.url)
-      let itemInfo = response.data;
-      //from here, we have a big object, the only certainty of which is equipment_category. 
-        //indexes we are looking for include 'armor' and 'weapon' 
-        if (itemInfo.equipment_category.index==='armor') {
-           item = {
-            'name':`Armor: ${itemInfo.name}`, 
-            'type':'armor',
-            'armor_class': itemInfo.armor_class
-            }
-            finalInventory.push(item)
-            return item;
-        } else if (itemInfo.equipment_category.index==='weapon') {
-          item = {
-            'name': itemInfo.name,
-            'type': 'weapon',
-            'damage': itemInfo.damage,
-            'range': itemInfo.range,
-            'properties': itemInfo.properties
-          }
-          finalInventory.push(item)
-          return item;
-        } else {
-          let quant = item.quantity;
-          item = {
-            'name':item.equipment.name,
-            'type':'other',
-            'quantity': quant
-          };
-          finalInventory.push(item)
-          return item;
-        };
-    })).then(data=>{
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+    let finalInventory =await itemFormatter(inventoryArray)
+    console.log('finalInventory:',finalInventory);
+
+
     //features need descriptions. 
-    Promise.all(featureArray.map(feature=>{
+    featureArray.forEach(feature=>{
       let featureInfo = get5ethings(feature.url);
       feature = {
         'name': featureInfo.name,
         'description':featureInfo.desc
       };
       return feature;
-    }))
+    });
   
-  }).then(data=> {
 
     let armorClass = 10; 
     //calculations (HP and Armor Class)
     let hitPoints = classObj.hitDie + modsObj.con;
     let armor = finalInventory.find(item=>(item.type==='armor'&&item.armor_class.base>9))
-    console.log('armor:',armor);
     if (armor) {
     let armorStats = armor.armor_class;
     armorClass = armorStats.base + (armorStats.dex_bonus==true?armorStats.max_bonus>modsObj.dex?armorStats.max_bonus:modsObj.dex:0)+(shield?2:0);
     } else {
       armorClass = 10 + modsObj.dex;
     }
-  let character = {
+  character = {
     'name': charInfo[0],
     'race': charInfo[1],
     'class': charInfo[2],
@@ -220,22 +196,21 @@ const charProcessor = async (charData) => {
     'armorClass': armorClass,
     'statBlock': statBlock,
     'profBonus': profBonus,
+    'equipment':inventoryArray,
     'size': raceObj.size,
     'speed': raceObj.speed,
     'traits':traitArray,
     'skills':skillArray,
     'languages':languageArray,
-    'equipment':finalInventory,
     'proficiencies':toolWeapArr,
     'features':featureArray,
     'classSpecific': classObj.classSpecific
   }
 
   classObj.spellcasting?character.spellcasting = classObj.spellcasting : '';
+  
 
-  console.log('character finished!',character);
-  return character
-});
+  return character;
 }
 
 module.exports = charProcessor;
