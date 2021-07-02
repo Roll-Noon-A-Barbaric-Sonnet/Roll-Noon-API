@@ -1,5 +1,5 @@
 'use strict'
-
+const charProcessor = require('./charProcessor');
 const Character = require('./CharacterModel');
 const axios = require('axios');
 
@@ -18,14 +18,17 @@ const axios = require('axios');
 //   });
 // };
 
-
-
 //test route. Hi! 
 let test = (req,res) => {
   console.log('test hit');
   res.send('Welcome to the Character Sonnet Server. Head to https://charactersonnet.quest/ to make a character.')
 }
 
+let testCpu = (req,res) => {
+  let charData= req.body;
+  console.log('new character!',charData);
+  res.send(charProcessor(charData));
+}
 //------------------------CRUD-------------------------- 
 
 // let findCharByEmail = (req,res) => {
@@ -50,7 +53,7 @@ let test = (req,res) => {
 //     if(err) {
 //       res.status(500).send('Invalid token');
 //     } else {
-//          //we will probably need to do some formatting and 800 get requests here. maybe have that function in a  module. 
+//          //we will probably need to do some formatting and 800 get requests here. maybe have that function in a  module. EDIT: see the CPU
 //       const newChar = new Character ({
 //         character: JSON.stringify(req.body.character),
 //         email: user.email
@@ -79,6 +82,9 @@ let test = (req,res) => {
 //   });
 // }
 
-module.exports = {test}
+
 // Copy paste this entire line in after test for things to work good.
 // , findCharByEmail, addChar, deleteChar
+
+module.exports = {test, testCpu}
+
