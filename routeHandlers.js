@@ -41,7 +41,7 @@ let findCharByEmail = (req,res) => {
       let userEmail = user.email;
       Character.find({email: userEmail}, (err, characters) => {
         console.log('charArray',characters);
-        let parsedCharacters = characters.map((char,ind)=>{
+        let parsedCharacters = characters.map((char)=>{
           let tempObj = JSON.parse(char.character);
           console.log('parsed:',tempObj)
           return {
@@ -68,7 +68,6 @@ let findCharId = (req,res) => {
         console.log('charObj:',character);
         let tempObj = JSON.parse(character.character);
         console.log('parsed:',tempObj)
-        
         let parsedCharacter = {
             '_id': character._id,
             'character': tempObj,
