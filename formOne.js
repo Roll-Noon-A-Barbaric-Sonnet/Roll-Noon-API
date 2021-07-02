@@ -37,6 +37,11 @@ const formOne = async (req,res) => {
     optionArrays['martial-melee-weapons'] = martialMelee.data.equipment.map(item=>formatEquip(item));
   }
 
+  if (charClass =='ranger') {
+    let simpleMelee = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/simple-melee-weapons`)
+    optionArrays['simple-melee-weapons'] = simpleMelee.data.equipment.map(item=>formatEquip(item));
+  }
+
   if (charClass == 'bard') {
     let instruments = await axios.get(`https://www.dnd5eapi.co/api/equipment-categories/musical-instruments`);
     optionArrays['musical-instruments'] = instruments.data.equipment.map(item=>formatEquip(item));
