@@ -64,20 +64,19 @@ let findCharId = (req,res) => {
     if(err) {
       res.status(500).send('Invalid token');
     } else {
-      Character.findById(req.params.id, (err, characters) => {
-        console.log('charArray',characters);
-        let parsedCharacters = characters.map((char,ind)=>{
-          let tempObj = JSON.parse(char.character);
-          console.log('parsed:',tempObj)
-          return {
-            '_id': char._id,
+      Character.findById(req.params.id, (err, character) => {
+        console.log('charObj:',character);
+        let tempObj = JSON.parse(character.character);
+        console.log('parsed:',tempObj)
+        
+        let parsedCharacter = {
+            '_id': character._id,
             'character': tempObj,
-            'email':char.email,
-            '__v': char.__v
+            'email':character.email,
+            '__v': character.__v
           }
-        })
-        console.log('sending:',parsedCharacters);
-        res.send(parsedCharacters);
+        console.log('sending:',parsedCharacter);
+        res.send(parsedCharacter);
       });
     };
   });
