@@ -9,13 +9,14 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT
+const MONGODB = process.env.MONGODB
 
 const formOne = require('./formOne.js');
 const routeHandlers = require('./routeHandlers.js');
 
 //--------------------------Mongoose Things-------------------------
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(MONGODB, {useNewUrlParser: true, useUnifiedTopology: true});
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
