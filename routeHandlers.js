@@ -40,33 +40,41 @@ let findCharByEmail = (req,res) => {
     } else {
       let userEmail = user.email;
       Character.find({email: userEmail}, (err, characters) => {
-        
-        // const parsedCharacters = characters.map(char=>{
-        //   let tempObj = JSON.parse(char.character);
-        //   char.character = tempObj;
-        // })
-        // JSON.parse(characters);
-        console.log(characters);
-        res.send(characters);
+        console.log('charArray',characters);
+        let parsedCharacters = characters.map((char,ind)=>{
+          let tempObj = JSON.parse(char.character);
+          console.log('parsed:',tempObj)
+          return {
+            '_id': char._id,
+            'character': tempObj,
+            'email':char.email,
+            '__v': char.__v
+          }
+        })
+        console.log('sending:',parsedCharacters);
+        res.send(parsedCharacters);
       });
     };
   });
 }
 
-let addChar = (req,res) => {
+let addChar = async (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
-  jwt.verify(token, getKey, {}, function(err, user) {
+  jwt.verify(token, getKey, {}, async function(err, user) {
     if(err) {
       res.status(500).send('Invalid token');
     } else {
       console.log('data:',req.body);
-      let charObj = charProcessor(req.body);
-      console.log(charObj)
+      let charObj = await charProcessor(req.body);
+      console.log('processed:',charObj);
+      let stringChar = JSON.stringify(charObj);
+      console.log('stringified:',stringChar);
       const newChar = new Character ({
         character: JSON.stringify(charObj),
         email: user.email
       });
       newChar.save((err, newCharData)=> {
+        console.log('newCharData:',newCharData);
         res.send(newCharData);
       });
     }
@@ -90,10 +98,6 @@ let deleteChar = (req,res) => {
     }
   });
 }
-
-
-// Copy paste this entire line in after test for things to work good.
-// , findCharByEmail, addChar, deleteChar
 
 module.exports = {test, testCpu, addChar, findCharByEmail,deleteChar}
 
