@@ -4,6 +4,9 @@ const Character = require('./CharacterModel');
 const axios = require('axios');
 const itemFormatter = require('./itemFormatter');
 
+// oh boy! This is LITERALLY why schemas exist: so you don't need a massive comment to describe your schema, you actually have it in code.
+// Impressive that this works, but would be SO MUCH BETTER as a real schema.
+
 //Welcome to the CPU! (Character Processing Unit)
 
 //This function will contain the mega-ultra processing that takes all the plain objects for equipment and proficiencies and whatnot and turns them into better objects with stats and such, and also sorts all of that stuff. Buckle up. 
@@ -44,17 +47,19 @@ const charProcessor = async (charData) => {
   let raceObj = charData[0];
   let classObj = charData[1];
   let charAnswers = charData[3];
+  // the fact that there's both a charInfo and a charData just about made my head explode
   let charInfo = charData[4];
   let statsObj = charData[5];
   //first thing: stats! Oh, and proficiency bonus. 
   let profBonus = classObj.proficiencyBonus;
   //Step1: gather the stat changes. 
-  charAnswers.find(ans=>ans.ability_score)?raceArray.abilities.push(charAnswers.find(ans=>ans.ability_score)):'';
+  // this is quite the typo/bug
+  charAnswers.find(ans=>ans.ability_score) ? raceObj.abilities.push(charAnswers.find(ans=>ans.ability_score)):'';
   //Step2: Apply them. 
   raceObj.abilities.forEach(boost=>{
     boost.index?
     statsObj[boost.index] += boost.bonus :
-    statsObj[boost.ablility_score.index] += boost.bonus;  
+    boost.ability_score? statsObj[boost.ablility_score.index] += boost.bonus : '';  
   })
   //Now make a modifiers Object. 
   let modsObj = {
@@ -116,10 +121,10 @@ const charProcessor = async (charData) => {
           inventoryArray.push(item);
         });
       } else {
-      inventoryArray.push(ans);
+        inventoryArray.push(ans);
       }
     } else if (/skill/.test(ans.url)) {
-      skillArray.push(ans)
+      skillArray.push(ans);
     } else if (/feature/.test(ans.url)) {
       featureArray.push(ans);
     } else if (/languages/.test(ans.url)) {
@@ -134,58 +139,65 @@ const charProcessor = async (charData) => {
   });
 
   //formatting
-    //Skills need to have their names fixed! They can be: 'Skill: Perception' or just 'Perception'. The indexes have a parallel problem. 
-    skillArray.forEach((prof,ind) =>{
-      if (/Skill: /.test(prof.name)) {
-        skillArray[ind] = {
+  //Skills need to have their names fixed! They can be: 'Skill: Perception' or just 'Perception'. The indexes have a parallel problem.
+  skillArray.forEach((prof,ind) =>{
+    // if this is at the beginning specifically, you could also use .startsWith, one of my favorite js string methods
+    if (/Skill: /.test(prof.name)) {
+      skillArray[ind] = {
         'name':prof.name.slice(7),
         'index':prof.index.slice(6)
-        }
-      } else {
-        skillArray[ind] = {
-          'name':prof.name,
-          'index':prof.index
-        }
+      };
+    } else {
+      skillArray[ind] = {
+        'name':prof.name,
+        'index':prof.index
       }
-    });
-    //axios everything
-    const get5ethings = async url => await axios.get(`https://www.dnd5eapi.co${url}`);
-    //especially the equipment. that needs stats. 
-    //this is the tricky part. What is an equipment? A miserable pile of secrets. 
-      //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
-    let shield = false;
-    if (inventoryArray.find(item=>item.equipment.index==='shield')) {
-      shield = true;
     }
+  });
+  //axios everything
+  // To clean up this function, I'd rather define helpers like this outside of the main CPU function.
+  const get5ethings = async url => await axios.get(`https://www.dnd5eapi.co${url}`);
+  //especially the equipment. that needs stats. 
+  //this is the tricky part. What is an equipment? A miserable pile of secrets. 
+    //We need to find weapons and armor in particular, but there is no way to know what type of item we have on our hands. Let the get requests begin!
+  // could just be
+  let shield = !!(inventoryArray.find(item=>item.equipment.index==='shield'));
+  // let shield = false;
+  // if (inventoryArray.find(item=>item.equipment.index==='shield')) {
+  //   shield = true;
+  // }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-    let finalInventory =await itemFormatter(inventoryArray)
-    console.log('finalInventory:',finalInventory);
+
+  let finalInventory =await itemFormatter(inventoryArray)
+  console.log('finalInventory:',finalInventory);
 
 
-    //features need descriptions. 
-    featureArray.forEach(feature=>{
-      let featureInfo = get5ethings(feature.url);
-      feature = {
-        'name': featureInfo.name,
-        'description':featureInfo.desc
-      };
-      return feature;
-    });
-  
+  //features need descriptions. 
+  featureArray.forEach(async feature=>{
+    // does this work? I'd expect, since get5ethings is async, that this doesn't work.
+    // You need to await the call to get5ethings.
+    let featureInfo = await get5ethings(feature.url);
+    feature = {
+      'name': featureInfo.name,
+      'description':featureInfo.desc
+    };
+    return feature;
+  });
 
-    let armorClass = 10; 
-    //calculations (HP and Armor Class)
-    let hitPoints = classObj.hitDie + modsObj.con;
-    let armor = finalInventory.find(item=>(item.type==='armor'&&item.armor_class.base>9))
-    if (armor) {
+
+  let armorClass = 10; 
+  //calculations (HP and Armor Class)
+  let hitPoints = classObj.hitDie + modsObj.con;
+  let armor = finalInventory.find(item=>(item.type==='armor'&&item.armor_class.base>9))
+  if (armor) {
     let armorStats = armor.armor_class;
-    armorClass = armorStats.base + (armorStats.dex_bonus==true?armorStats.max_bonus>modsObj.dex?armorStats.max_bonus:modsObj.dex:0)+(shield?2:0);
-    } else {
-      armorClass = 10 + modsObj.dex;
-    }
+    armorClass = armorStats.base + (armorStats.dex_bonus?armorStats.max_bonus>modsObj.dex?armorStats.max_bonus:modsObj.dex:0)+(shield?2:0);
+  } else {
+    armorClass = 10 + modsObj.dex;
+  }
+  // this! this is what would be nice to have as a schema!
   character = {
     'name': charInfo[0],
     'race': charInfo[1],
@@ -205,12 +217,12 @@ const charProcessor = async (charData) => {
     'proficiencies':toolWeapArr,
     'features':featureArray,
     'classSpecific': classObj.classSpecific
-  }
+  };
 
   classObj.spellcasting?character.spellcasting = classObj.spellcasting : '';
-  
+
 
   return character;
-}
+};
 
 module.exports = charProcessor;

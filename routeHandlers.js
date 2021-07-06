@@ -1,7 +1,6 @@
-'use strict'
+'use strict';
 const charProcessor = require('./charProcessor');
 const Character = require('./CharacterModel');
-const axios = require('axios');
 
 //-----------------JUST JWT THINGS----------------------
 const jwt = require('jsonwebtoken');
@@ -16,21 +15,23 @@ function getKey(header, callback){
     var signingKey = key.publicKey || key.rsaPublicKey;
     callback(null, signingKey);
   });
-};
-
-//test route. Hi! 
-let test = (req,res) => {
-  console.log('test hit');
-  res.send('Welcome to the Character Sonnet Server. Head to https://charactersonnet.quest/ to make a character.')
 }
 
+//test route. Hi!
+let test = (req,res) => {
+  console.log('test hit');
+  // this is a lovely test route
+  res.send('Welcome to the Character Sonnet Server. Head to https://charactersonnet.quest/ to make a character.');
+};
+
+// would be good to at least put a comment here saying it's unused, or even better, remove the code
 let testCpu = async (req,res) => {
   let charData= req.body;
   let newChar = await charProcessor(charData);
   console.log('new character!',newChar);
   res.send(newChar);
-}
-//------------------------CRUD-------------------------- 
+};
+//------------------------CRUD--------------------------
 
 let findCharByEmail = (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
@@ -43,20 +44,20 @@ let findCharByEmail = (req,res) => {
         console.log('charArray',characters);
         let parsedCharacters = characters.map((char)=>{
           let tempObj = JSON.parse(char.character);
-          console.log('parsed:',tempObj)
+          console.log('parsed:',tempObj);
           return {
             '_id': char._id,
             'character': tempObj,
             'email':char.email,
             '__v': char.__v
-          }
-        })
+          };
+        });
         console.log('sending:',parsedCharacters);
         res.send(parsedCharacters);
       });
-    };
+    }
   });
-}
+};
 
 let findCharId = (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
@@ -66,20 +67,28 @@ let findCharId = (req,res) => {
     } else {
       Character.findById(req.params.id, (err, character) => {
         console.log('charObj:',character);
-        let tempObj = JSON.parse(character.character);
-        console.log('parsed:',tempObj)
-        let parsedCharacter = {
+        // You never actually check here that the character belongs to the user who made the request.
+        // This means that, if I guessed the id of a character, I could see data about other users' characters.
+        // Instead, you need to do a check:
+        if (character.email === user.email) {
+          let tempObj = JSON.parse(character.character);
+          console.log('parsed:',tempObj);
+          let parsedCharacter = {
             '_id': character._id,
             'character': tempObj,
             'email':character.email,
             '__v': character.__v
-          }
-        console.log('sending:',parsedCharacter);
-        res.send(parsedCharacter);
+          };
+          console.log('sending:',parsedCharacter);
+          res.send(parsedCharacter);
+        } else {
+          // user and character don't match
+          res.status(403).send('You do not have permission to access this character.');
+        }
       });
-    };
+    }
   });
-}
+};
 
 let addChar = async (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
@@ -103,14 +112,14 @@ let addChar = async (req,res) => {
     }
   }
   );
-} 
+};
 
 let deleteChar = (req,res) => {
   const token = req.headers.authorization.split(' ')[1];
   jwt.verify(token, getKey, {}, function(err, user) {
     if(err) {
       res.status(500).send('invalid token');
-    } else { 
+    } else {
       let charId = req.params.id;
 
       Character.deleteOne({_id: charId, email: user.email})
@@ -120,7 +129,6 @@ let deleteChar = (req,res) => {
         });
     }
   });
-}
+};
 
-module.exports = {test, testCpu, addChar, findCharByEmail, findCharId, deleteChar}
-
+module.exports = {test, testCpu, addChar, findCharByEmail, findCharId, deleteChar};
