@@ -56,6 +56,7 @@ bower_components
 build/Release
 
 # Dependency directories
+# Somehow, you managed to commit your node_modules. They're still taking up space in your repo. :(
 node_modules/
 jspm_packages/
 

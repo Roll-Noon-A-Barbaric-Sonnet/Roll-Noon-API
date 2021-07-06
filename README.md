@@ -4,6 +4,7 @@
 A Dungeons and Dragons 5e character creator, and keeper.</br>
 Roll-Noon makes it easy for you to create, customize, and store your D&D 5e characters.</br></br>
 
+<!-- Missing directions to get started: environment variables -->
 # Creators
 [Benjamin Arno](https://github.com/Barnord)</br>
 [Steven Boston](https://github.com/Steven-Boston)</br>
